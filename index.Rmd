@@ -1,36 +1,357 @@
 ---
-title: "Untitled"
+title: "COVID-19 INDONESIA UPDATE"
 output: 
   flexdashboard::flex_dashboard:
-    orientation: columns
-    vertical_layout: fill
+    orientation: rows
+    social: menu
+    source: embed
 ---
 
-```{r setup, include=FALSE}
+```{r global, include=FALSE}
 library(flexdashboard)
+
+source("R/function.R")
+source("R/variables.R")
+
+ina_daily <- getDailyData(INA_DAILY) %>% cleanData()
+ina_province <- getProvinceData(INA_PROVINCE) %>% cleanData()
+
+update_date <- max(ina_province$Tanggal)
 ```
+
+Summary
+=========================================================================
 
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Chart A
+### TOTAL TERKONFIRMASI
 
 ```{r}
+confirmed <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Kumulatif) %>%
+    format(round(0), big.mark = ",")
+
+confirmed_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Baru_per_Hari) %>%
+    format(round(0), big.mark = ",")
+
+valueBox(confirmed, caption = sprintf("TERKONFIRMASI  (%s)", if(confirmed_new>0) paste0("+",confirmed_new) else confirmed_new), icon = "fa fa-thermometer-full")
+```
+
+### TOTAL DIRAWAT
+
+```{r}
+hospitilized <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_pasien_dalam_perawatan) %>%
+    format(round(0), big.mark = ",")
+
+hospitilized_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Dirawat_per_Hari) %>%
+    format(round(0), big.mark = ",")
+
+valueBox(hospitilized, caption = sprintf("DALAM PERAWATAN  (%s)", if(hospitilized_new>0) paste0("+",hospitilized_new) else hospitilized_new), icon = "fa fa-hospital-o", color = "orange")
+```
+
+
+### TOTAL SEMBUH
+
+```{r}
+recovered <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Pasien_Sembuh) %>%
+    format(round(0), big.mark = ",")
+
+recovered_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Sembuh_per_Hari) %>%
+    format(round(0), big.mark = ",")
+
+valueBox(recovered, caption = sprintf("SEMBUH  (%s)", if(recovered_new>0) paste0("+",recovered_new) else recovered_new), icon = "fa fa-heart", color = "green")
+```
+
+### TOTAL MENINGGAL
+
+```{r}
+death <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Pasien_Meninggal) %>%
+    format(round(0), big.mark = ",")
+
+death_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Meninggal_per_Hari) %>%
+    format(round(0), big.mark = ",")
+
+valueBox(death, caption = sprintf("MENINGGAL  (%s)", if(death_new>0) paste0("+",death_new) else death_new), icon = "fa fa-plus-square", color = "red")
 
 ```
 
-Column {data-width=350}
+
+Row
 -----------------------------------------------------------------------
 
-### Chart B
+### TREND KASUS KUMULATIF
 
 ```{r}
+library(dplyr)
+library(dygraphs)
+library(xts)
+
+dygraph_df <- ina_daily %>% 
+  select(Tanggal, Jumlah_Kasus_Kumulatif, Jumlah_Pasien_Sembuh, Jumlah_Pasien_Meninggal)%>%
+  filter(Tanggal < update_date + 1) %>%
+  mutate(Tanggal=as.Date(Tanggal)) %>%
+  rename(TERKONFIRMASI = Jumlah_Kasus_Kumulatif, SEMBUH = Jumlah_Pasien_Sembuh, MENINGGAL = Jumlah_Pasien_Meninggal)
+
+xts_df <- xts(dygraph_df[,-1], dygraph_df[,1])
+dygraph_plot_cum <- xts_df %>%  
+  dygraph(main = "TREND KASUS KUMULATIF", ylab = "Total Kasus") %>% 
+  dyRangeSelector(height = 20) %>%
+  dyGroup(c("TERKONFIRMASI", "SEMBUH", "MENINGGAL"), drawPoints = TRUE, color = c("blue", "green", "red")) %>%
+  dyLegend(width = 500) %>% 
+  dyShading(from = "2020/04/10", to = "2020-06-01", color = "#FFE6E6") %>%
+  dyShading(from = "2020/06/01", to = max(ina_daily$Tanggal), color = "#CCEBD6") %>% 
+  dyEvent("2020/04/10", "Pemberlakuan PSBB", labelLoc = "bottom") %>%
+  dyEvent("2020/05/23", "Lebaran", labelLoc = "bottom") %>%
+  dyEvent("2020/06/01", "New Normal / Transisi / AKB", labelLoc = "bottom") 
+  
+dygraph_plot_cum
 
 ```
 
-### Chart C
+### TREND KASUS BARU PERHARI
 
 ```{r}
+library(dplyr)
+library(dygraphs)
+library(xts)
+
+dygraph_df <- ina_daily %>% 
+  filter(Tanggal < update_date + 1) %>%
+  select(Tanggal, Jumlah_Kasus_Baru_per_Hari, Jumlah_Kasus_Sembuh_per_Hari, Jumlah_Kasus_Meninggal_per_Hari)%>%
+  mutate(Tanggal=as.Date(Tanggal)) %>%
+  rename(TERKONFIRMASI = Jumlah_Kasus_Baru_per_Hari, SEMBUH = Jumlah_Kasus_Sembuh_per_Hari, MENINGGAL = Jumlah_Kasus_Meninggal_per_Hari)
+
+xts_df <- xts(dygraph_df[,-1], dygraph_df[,1])
+dygraph_plot_new_case <- xts_df %>%  
+  dygraph(main = "TREND KASUS BARU PERHARI", ylab = "Jumlah Kasus Baru") %>%
+  dyGroup(c("TERKONFIRMASI", "SEMBUH", "MENINGGAL"), drawPoints = TRUE, color = c("blue", "green", "red")) %>%
+  dyRangeSelector(height = 20) %>%
+  dyLegend(width = 500) %>% 
+  dyShading(from = "2020/04/10", to = "2020/06/01", color = "#FFE6E6") %>%
+  dyEvent("2020/05/23", "Lebaran", labelLoc = "bottom") %>%
+  dyShading(from = "2020/06/01", to = max(ina_daily$Tanggal), color = "#CCEBD6") %>% 
+  dyEvent("2020/04/10", "Pemberlakuan PSBB", labelLoc = "bottom") %>%
+  dyEvent("2020/05/23", "Lebaran", labelLoc = "bottom") %>%
+  dyEvent("2020/06/01", "New Normal / Transisi / AKB", labelLoc = "bottom")
+
+dygraph_plot_new_case
 
 ```
+
+
+Perprovinsi
+==============================================================================
+
+Row
+-----------------------------------------------------------------------
+### TREND PERPROVINSI
+
+
+```{r}
+library(RcppRoll)
+
+# code refference https://github.com/dioariadi/covid-19/blob/master/covid-19-tracker-indonesia.Rmd
+
+case_by_prov <- ina_province %>%
+  select(Provinsi, Tanggal, Penambahan_Harian_Kasus_Terkonf) %>%
+  filter(Provinsi != "Indonesia") %>%
+  arrange(Tanggal) %>% 
+  group_by(Provinsi) %>%
+    mutate(casesroll_avg=round(roll_mean(Penambahan_Harian_Kasus_Terkonf, 7, align="right", fill=0),0)) %>%
+  ungroup()
+
+filter_daily <- case_by_prov %>%
+  group_by(Provinsi) %>%
+  filter(casesroll_avg >= 5) %>%
+  slice(min(which(casesroll_avg >= 5))) %>% 
+  ungroup() %>% 
+  mutate(Tanggal = as.Date(Tanggal)) %>%
+  rename(filter_week = Tanggal)
+
+case_by_prov_daily <- case_by_prov %>% ungroup() %>% 
+   left_join(filter_daily[,c(1,2)], by = c("Provinsi")) %>% 
+   mutate(Tanggal = as.Date(Tanggal)) %>%
+   filter(Tanggal >= filter_week) %>% 
+   arrange(Tanggal) %>% 
+   group_by(Provinsi) %>% 
+   mutate(day_since_n_case = row_number()) %>% 
+   ungroup()
+```
+
+
+```{r}
+library(highcharter)
+
+case_prov_daily_plot <- hchart(case_by_prov_daily, "line", 
+                         hcaes(x = day_since_n_case, y = casesroll_avg, group = Provinsi),
+                         showInLegend = FALSE) %>%
+  hc_xAxis(
+    title = list(text = "Jumlah Hari Sejak Rata-rata Kasus Perhari diatas 4"),
+    gridLineWidth = 0
+    ) %>%
+  hc_yAxis(
+    title = list(text = "Penambahan Kasus Perhari"),
+    type = "linear",
+    min = 0,
+    accessibility = list(
+            rangeDescription = 'Range: 1 to 1000'),
+    gridLineWidth = 0
+    ) %>%
+  hc_title(
+    style = list(color = hex_to_rgba("black", 0.7)),
+    text = "Penambahan Kasus Perprovinsi"
+    ) %>%
+  hc_subtitle(
+    style = list(color = hex_to_rgba("black", 0.5)),
+    text = "Rolling Average 7 hari Penambahan Kasus Terkonfirmasi Perhari"
+    ) %>%
+  hc_caption(
+    text = sprintf("Last Update : %s", update_date)
+    )
+
+case_prov_daily_plot
+```
+
+
+### PROVINSI STATUS
+
+```{r}
+prov_status <- ina_province %>% 
+  select(Provinsi, Tanggal, Kasus_Terkonfirmasi_Akumulatif, Kasus_Sembuh_Akumulatif, Kasus_Meninggal_Akumulatif, Kasus_Aktif_Akumulatif)  %>% 
+    filter(Provinsi != "Indonesia") %>%
+    filter(as.Date(Tanggal) == update_date) %>%
+    mutate(death_rate = round(Kasus_Meninggal_Akumulatif / Kasus_Terkonfirmasi_Akumulatif, 4) * 100) %>%
+    mutate(recovery_rate = round(Kasus_Sembuh_Akumulatif / Kasus_Terkonfirmasi_Akumulatif, 4) * 100)
+
+```
+
+
+```{r}
+library(highcharter)
+
+#colorised status based on death_rate dan recovery_rate
+prov_status$Status <- with(prov_status, ifelse(
+  death_rate < mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'LowDeathHighRecover', ifelse(
+  death_rate > mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'HighDeathLowRecover', ifelse(
+ death_rate > mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'HighDeathHighRecover', ifelse(
+  death_rate < mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'LowDeathHighRevover', 
+  'Others')))))
+
+colors <- c('#FFD300', '#C53E13', '#FFC800', '#5EFF00', '#FFC100')
+
+x <- c("Provinsi", "Recovery Rate", "Death Rate", "Kasus Aktif")
+#y <- sprintf("{point.%s:.2f}", c("Provinsi", "recovery_rate", "death_rate", "Kasus_Aktif_Akumulatif"))
+y <- c("{point.Provinsi}", "{point.recovery_rate}%", "{point.death_rate}%", "{point.Kasus_Aktif_Akumulatif}")
+
+tooltip_tb <- tooltip_table(x, y)
+
+library(highcharter)
+#colorised status based on death_rate dan recovery_rate
+prov_status$Status <- with(prov_status, ifelse(
+  death_rate < mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'LowDeathHighRecover', ifelse(
+  death_rate > mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'HighDeathLowRecover', ifelse(
+ death_rate > mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'HighDeathHighRecover', ifelse(
+  death_rate < mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'LowDeathHighRevover', 'Others')))))
+colors <- c('#FFD300', '#C53E13', '#FFC800', '#5EFF00', '#FFC100')
+x <- c("Provinsi", "Recovery Rate", "Death Rate", "Kasus Aktif")
+#y <- sprintf("{point.%s:.2f}", c("Provinsi", "recovery_rate", "death_rate", "Kasus_Aktif_Akumulatif"))
+y <- c("{point.Provinsi}", "{point.recovery_rate}%", "{point.death_rate}%", "{point.Kasus_Aktif_Akumulatif}")
+tooltip_tb <- tooltip_table(x, y)
+hchart(
+  prov_status,
+  "scatter",
+  hcaes(
+    as.numeric(recovery_rate),
+    as.numeric(death_rate), 
+    size = Kasus_Terkonfirmasi_Akumulatif,
+    group = Status
+    ),
+  minSize = 15,
+  maxSize = 55
+  ) %>%
+  hc_chart(
+     backgroundColor = "white",
+    backgroundColor = hex_to_rgba("white", 0.5)
+    ) %>%
+  hc_colors(colors = colors) %>%
+  hc_xAxis(
+    title = list(text = "Recovery Rate"),
+    labels = list(format = '{value}%'),
+    plotLines = list(list(
+      value = mean(prov_status$recovery_rate),
+      label = list(
+        text = sprintf("Rata-rata Nasional (%s%%)", round(mean(prov_status$recovery_rate),2)),
+        rotation = 0,
+        style = list(fontStyle = 'italic')),
+      color = 'black',
+      width = 2,
+      dashStyle = 'dot'
+    )),
+    gridLineWidth = 0,
+    reversed = FALSE
+    ) %>%
+  hc_yAxis(
+    title = list(text = "Death Rate"),
+    labels = list(format = '{value}%'), 
+    min = 0,
+    max = max(prov_status$death_rate) + 1,
+    plotLines = list(list(
+      value = mean(prov_status$death_rate),
+      label = list(
+        text = sprintf("Rata-rata Nasional (%s%%)", round(mean(prov_status$death_rate),2)),
+        rotation = 0,
+        style = list(fontStyle = 'italic')),
+      color = 'black',
+      width = 2,
+      dashStyle = 'dot'
+    )), 
+    gridLineWidth = 0
+    ) %>%
+  hc_title(
+    style = list(color = hex_to_rgba("black", 0.7)),
+    text = "Status Perprovinsi"
+    ) %>%
+  hc_subtitle(
+    style = list(color = hex_to_rgba("black", 0.5)),
+    text = "Berdasarkan Fatality Rate"
+    ) %>% 
+  hc_caption(
+    text = sprintf("Last Update : %s", update_date)
+    ) %>%
+  hc_credits(
+    enabled = TRUE, text = "Graph by idrusfachr build with highcharter",
+    href = "idrusfachr.netlify.com",
+    style = list(fontSize = "11px")) %>%
+  # hc_plotOptions(
+  #   series = list(
+  #           dataLabels = list(
+  #               enabled = TRUE,
+  #               format = '{point.Provinsi}',
+  #               allowOverlap = TRUE,
+  #               style = list(
+  #                 color = "black",
+  #                 fontSize = "9px",
+  #                 fontWeight = "bold",
+  #                 textOutline = "0.5px contrast"
+  #                 )
+  #           )
+  #   )
+  #) %>%
+  hc_tooltip(
+    useHTML = TRUE,
+    headerFormat = "",
+    pointFormat = tooltip_tb
+    ) %>%
+  hc_plotOptions(
+        series = list(
+            maxSize = 70)
+  ) %>%
+  hc_size(
+    height = 700
+    )
+
+```
+
+
+
 

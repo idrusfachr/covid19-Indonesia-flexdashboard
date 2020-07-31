@@ -8,7 +8,7 @@ output:
     source: embed
 ---
 
-Tesing
+Visualisasi perkembangan kasus Covid-19 di Indonesia. Data bersumber dari 
 
 ```{r global, include=FALSE}
 library(flexdashboard)
@@ -25,7 +25,7 @@ update_date <- max(ina_province$Tanggal)
 Summary
 =========================================================================
 
-Column {data-width=650}
+Column
 -----------------------------------------------------------------------
 
 ### TOTAL TERKONFIRMASI
@@ -207,9 +207,6 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
   hc_subtitle(
     style = list(color = hex_to_rgba("black", 0.5)),
     text = "Rolling Average 7 hari Penambahan Kasus Terkonfirmasi Perhari"
-    ) %>%
-  hc_caption(
-    text = sprintf("Last Update : %s", update_date)
     )
 
 case_prov_daily_plot
@@ -348,10 +345,7 @@ hchart(
   hc_plotOptions(
         series = list(
             maxSize = 70)
-  ) %>%
-  hc_size(
-    height = 700
-    )
+  )
 
 ```
 

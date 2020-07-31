@@ -8,14 +8,14 @@ getDailyData <- function(endpoint){
   text <- fromJSON(text_json, flatten = TRUE)
   text_df <- as.data.frame(text)
   
-  #handle if todays data on API have not updated yet, then direct download the csv file
-  if(is.na(text_df[as.Date(text_df$features.properties.Tanggal) == Sys.Date(), c("features.properties.Jumlah_Kasus_Kumulatif")]) == TRUE){
+  # handle if todays data on API have not updated yet, then direct download the csv file
+  if(is.na(text_df[as.Date(text_df$features.properties.Tanggal) == Sys.Date() - 1, c("features.properties.Jumlah_Kasus_Kumulatif")]) == TRUE){
     return(read.csv("https://opendata.arcgis.com/datasets/db3be1cadcf44b6fa709274c12726c59_0.csv"))
   }
   else {
     return(text_df)
   }
-  
+
 }
 
 getProvinceData <- function(endpoint){
@@ -25,7 +25,7 @@ getProvinceData <- function(endpoint){
   text_df <- as.data.frame(text)
   
   #handle if todays data have not updated yet
-  if(max(as.Date(text_df$Tanggal)) < Sys.Date()){
+  if(sort(text_df$features.properties.Tanggal, decreasing = TRUE)[1] != Sys.Date() - 1){
     return(read.csv("https://opendata.arcgis.com/datasets/685be21cd0034247b5ceeac996d947fe_0.csv"))
   }
   else {

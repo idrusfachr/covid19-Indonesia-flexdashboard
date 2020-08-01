@@ -1,11 +1,10 @@
 ---
 title: "COVID-19 INDONESIA UPDATE"
-author: "Muhammad Idrus F"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
     social: menu
-    source: embed
+    source_code : embed
 ---
 
 Visualisasi perkembangan kasus Covid-19 di Indonesia. Data harian bersumber dari [covid19.go.id](https://data.covid19.go.id/) dan data perprovinsi dari [BNPB](https://bnpb-inacovid19.hub.arcgis.com/). Data update setiap hari.
@@ -24,7 +23,7 @@ update_date <- UPDATE_DATE - 1
 ```
 
 Summary
-=========================================================================
+==============================================================================================================
 
 Column
 -----------------------------------------------------------------------
@@ -100,7 +99,7 @@ dygraph_plot_cum <- xts_df %>%
   dygraph(main = "TREND KASUS KUMULATIF", ylab = "Total Kasus") %>% 
   dyRangeSelector(height = 20) %>%
   dyGroup(c("TERKONFIRMASI", "SEMBUH", "MENINGGAL"), drawPoints = TRUE, color = c("blue", "green", "red")) %>%
-  dyLegend(show = "follow") %>% 
+  dyLegend(width = 300) %>% 
   dyShading(from = "2020/04/10", to = "2020-06-01", color = "#FFE6E6") %>%
   dyShading(from = "2020/06/01", to = max(ina_daily$Tanggal), color = "#CCEBD6") %>% 
   dyEvent("2020/04/10", "Pemberlakuan PSBB", labelLoc = "bottom") %>%
@@ -129,7 +128,7 @@ dygraph_plot_new_case <- xts_df %>%
   dygraph(main = "TREND KASUS BARU PERHARI", ylab = "Jumlah Kasus Baru") %>%
   dyGroup(c("TERKONFIRMASI", "SEMBUH", "MENINGGAL"), drawPoints = TRUE, color = c("blue", "green", "red")) %>%
   dyRangeSelector(height = 20) %>%
-  dyLegend(show = "follow") %>% 
+  dyLegend(width = 300) %>% 
   dyShading(from = "2020/04/10", to = "2020/06/01", color = "#FFE6E6") %>%
   dyEvent("2020/05/23", "Lebaran", labelLoc = "bottom") %>%
   dyShading(from = "2020/06/01", to = max(ina_daily$Tanggal), color = "#CCEBD6") %>% 
@@ -142,11 +141,12 @@ dygraph_plot_new_case
 ```
 
 
-Perprovinsi {data-navmenu="Menu B"}
-==============================================================================
+Perprovinsi
+====================================================================================================================
 
 Row
 -----------------------------------------------------------------------
+
 ### TREND PERPROVINSI
 
 

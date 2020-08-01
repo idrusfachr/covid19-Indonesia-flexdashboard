@@ -8,7 +8,7 @@ output:
     source: embed
 ---
 
-Visualisasi perkembangan kasus Covid-19 di Indonesia. Data bersumber dari 
+Visualisasi perkembangan kasus Covid-19 di Indonesia. Data harian bersumber dari [covid19.go.id](https://data.covid19.go.id/) dan data perprovinsi dari [BNPB](https://bnpb-inacovid19.hub.arcgis.com/). Data update setiap hari.
 
 ```{r global, include=FALSE}
 library(flexdashboard)
@@ -16,10 +16,11 @@ library(flexdashboard)
 source("R/function.R")
 source("R/variables.R")
 
-ina_daily <- getDailyData(INA_DAILY) %>% cleanData()
-ina_province <- getProvinceData(INA_PROVINCE) %>% cleanData()
+ina_daily <- getData(INA_DAILY) %>% cleanData() %>% mutate(Tanggal = as.Date(harian.key_as_string))
 
-update_date <- max(ina_province$Tanggal)
+ina_province <- getData(INA_PROVINCE) %>% cleanData()
+
+update_date <- UPDATE_DATE - 1
 ```
 
 Summary
@@ -31,10 +32,10 @@ Column
 ### TOTAL TERKONFIRMASI
 
 ```{r}
-confirmed <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Kumulatif) %>%
+confirmed <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_positif) %>%
     format(round(0), big.mark = ",")
 
-confirmed_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Baru_per_Hari) %>%
+confirmed_new <- ina_daily %>% subset(Tanggal==update_date, select = penambahan.jumlah_positif) %>%
     format(round(0), big.mark = ",")
 
 valueBox(confirmed, caption = sprintf("TERKONFIRMASI  (%s)", if(confirmed_new>0) paste0("+",confirmed_new) else confirmed_new), icon = "fa fa-thermometer-full")
@@ -43,10 +44,10 @@ valueBox(confirmed, caption = sprintf("TERKONFIRMASI  (%s)", if(confirmed_new>0)
 ### TOTAL DIRAWAT
 
 ```{r}
-hospitilized <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_pasien_dalam_perawatan) %>%
+hospitilized <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_dirawat) %>%
     format(round(0), big.mark = ",")
 
-hospitilized_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Dirawat_per_Hari) %>%
+hospitilized_new <- ina_daily %>% subset(Tanggal==update_date, select = penambahan.jumlah_dirawat) %>%
     format(round(0), big.mark = ",")
 
 valueBox(hospitilized, caption = sprintf("DALAM PERAWATAN  (%s)", if(hospitilized_new>0) paste0("+",hospitilized_new) else hospitilized_new), icon = "fa fa-hospital-o", color = "orange")
@@ -56,10 +57,10 @@ valueBox(hospitilized, caption = sprintf("DALAM PERAWATAN  (%s)", if(hospitilize
 ### TOTAL SEMBUH
 
 ```{r}
-recovered <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Pasien_Sembuh) %>%
+recovered <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_sembuh) %>%
     format(round(0), big.mark = ",")
 
-recovered_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Sembuh_per_Hari) %>%
+recovered_new <- ina_daily %>% subset(Tanggal==update_date, select = penambahan.jumlah_sembuh) %>%
     format(round(0), big.mark = ",")
 
 valueBox(recovered, caption = sprintf("SEMBUH  (%s)", if(recovered_new>0) paste0("+",recovered_new) else recovered_new), icon = "fa fa-heart", color = "green")
@@ -68,10 +69,10 @@ valueBox(recovered, caption = sprintf("SEMBUH  (%s)", if(recovered_new>0) paste0
 ### TOTAL MENINGGAL
 
 ```{r}
-death <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Pasien_Meninggal) %>%
+death <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_meninggal) %>%
     format(round(0), big.mark = ",")
 
-death_new <- ina_daily %>% subset(Tanggal==update_date, select = Jumlah_Kasus_Meninggal_per_Hari) %>%
+death_new <- ina_daily %>% subset(Tanggal==update_date, select = penambahan.jumlah_meninggal) %>%
     format(round(0), big.mark = ",")
 
 valueBox(death, caption = sprintf("MENINGGAL  (%s)", if(death_new>0) paste0("+",death_new) else death_new), icon = "fa fa-plus-square", color = "red")
@@ -79,7 +80,7 @@ valueBox(death, caption = sprintf("MENINGGAL  (%s)", if(death_new>0) paste0("+",
 ```
 
 
-Row
+Column
 -----------------------------------------------------------------------
 
 ### TREND KASUS KUMULATIF
@@ -89,11 +90,10 @@ library(dplyr)
 library(dygraphs)
 library(xts)
 
-dygraph_df <- ina_daily %>% 
-  select(Tanggal, Jumlah_Kasus_Kumulatif, Jumlah_Pasien_Sembuh, Jumlah_Pasien_Meninggal)%>%
+dygraph_df <- ina_daily %>%
+  select(Tanggal, harian.jumlah_positif_kum.value, harian.jumlah_sembuh_kum.value, harian.jumlah_meninggal_kum.value)%>%
   filter(Tanggal < update_date + 1) %>%
-  mutate(Tanggal=as.Date(Tanggal)) %>%
-  rename(TERKONFIRMASI = Jumlah_Kasus_Kumulatif, SEMBUH = Jumlah_Pasien_Sembuh, MENINGGAL = Jumlah_Pasien_Meninggal)
+  rename(TERKONFIRMASI = harian.jumlah_positif_kum.value, SEMBUH = harian.jumlah_sembuh_kum.value, MENINGGAL = harian.jumlah_meninggal_kum.value)
 
 xts_df <- xts(dygraph_df[,-1], dygraph_df[,1])
 dygraph_plot_cum <- xts_df %>%  
@@ -120,9 +120,9 @@ library(xts)
 
 dygraph_df <- ina_daily %>% 
   filter(Tanggal < update_date + 1) %>%
-  select(Tanggal, Jumlah_Kasus_Baru_per_Hari, Jumlah_Kasus_Sembuh_per_Hari, Jumlah_Kasus_Meninggal_per_Hari)%>%
+  select(Tanggal, harian.jumlah_positif.value, harian.jumlah_sembuh.value, harian.jumlah_meninggal.value)%>%
   mutate(Tanggal=as.Date(Tanggal)) %>%
-  rename(TERKONFIRMASI = Jumlah_Kasus_Baru_per_Hari, SEMBUH = Jumlah_Kasus_Sembuh_per_Hari, MENINGGAL = Jumlah_Kasus_Meninggal_per_Hari)
+  rename(TERKONFIRMASI = harian.jumlah_positif.value, SEMBUH = harian.jumlah_sembuh.value, MENINGGAL = harian.jumlah_meninggal.value)
 
 xts_df <- xts(dygraph_df[,-1], dygraph_df[,1])
 dygraph_plot_new_case <- xts_df %>%  
@@ -142,7 +142,7 @@ dygraph_plot_new_case
 ```
 
 
-Perprovinsi
+Perprovinsi {data-navmenu="Menu B"}
 ==============================================================================
 
 Row

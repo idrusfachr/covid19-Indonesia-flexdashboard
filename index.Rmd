@@ -19,7 +19,7 @@ ina_daily <- getData(INA_DAILY) %>% cleanData() %>% mutate(Tanggal = as.Date(har
 
 ina_province <- getData(INA_PROVINCE) %>% cleanData()
 
-update_date <- UPDATE_DATE - 1
+update_date <- UPDATE_DATE
 ```
 
 Summary

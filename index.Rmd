@@ -207,6 +207,9 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
   hc_subtitle(
     style = list(color = hex_to_rgba("black", 0.5)),
     text = "Rolling Average 7 hari Penambahan Kasus Terkonfirmasi Perhari"
+    ) %>%
+  hc_caption(
+    text = sprintf("Last Update : %s", update_date)
     )
 
 case_prov_daily_plot
@@ -318,10 +321,7 @@ hchart(
   hc_caption(
     text = sprintf("Last Update : %s", update_date)
     ) %>%
-  hc_credits(
-    enabled = TRUE, text = "Graph by idrusfachr build with highcharter",
-    href = "idrusfachr.netlify.com",
-    style = list(fontSize = "11px")) %>%
+  #
   # hc_plotOptions(
   #   series = list(
   #           dataLabels = list(

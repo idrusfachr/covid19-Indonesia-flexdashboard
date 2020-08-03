@@ -153,9 +153,9 @@ dygraph_plot_new_case
 <!-- Row {data-height=600} -->
 <!-- ----------------------------------------------------------------------- -->
 
-### TREND PERPROVINSI
-NOTE : Tanggal 3 Agustus data perprovinsi dari BNPB tidak sinkron dengan jumlah penambahan kasus dari data.covid.go.id, terlihat ada anomali kenaikan yang sangat signifikan di data BNPB, data yang ditampilkan di bawah adalah apa adanya dari sumber aslinya. Belum ada konfirmasi penyebab perbedaan data pada tanggal ini.
+> NOTE : Tanggal 3 Agustus data perprovinsi dari BNPB tidak sinkron dengan jumlah penambahan kasus dari data.covid.go.id, terlihat ada anomali kenaikan yang sangat signifikan di data BNPB, data yang ditampilkan di bawah adalah apa adanya dari sumber aslinya. Belum ada konfirmasi penyebab perbedaan data pada tanggal ini.
 
+### TREND PERPROVINSI
 
 ```{r}
 library(RcppRoll)

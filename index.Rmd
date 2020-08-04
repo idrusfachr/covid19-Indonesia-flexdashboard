@@ -2,11 +2,9 @@
 title: "COVID-19 INDONESIA UPDATE"
 output: 
   flexdashboard::flex_dashboard:
-    navbar:
-      - { title: "Blog", href: "https://idrusfachr.netlify.com/", align: left }
     vertical_layout: scroll
     social: menu
-    source_code : embed
+    source_code: embed
 ---
 
 Visualisasi perkembangan kasus Covid-19 di Indonesia. Data harian bersumber dari [covid19.go.id](https://data.covid19.go.id/) dan data perprovinsi dari [BNPB](https://bnpb-inacovid19.hub.arcgis.com/).
@@ -153,7 +151,7 @@ dygraph_plot_new_case
 <!-- Row {data-height=600} -->
 <!-- ----------------------------------------------------------------------- -->
 
-> NOTE : Tanggal 3 Agustus data perprovinsi dari BNPB tidak sinkron dengan jumlah penambahan kasus dari data.covid.go.id, terlihat ada anomali kenaikan yang sangat signifikan di data BNPB, data yang ditampilkan di bawah adalah apa adanya dari sumber aslinya. Belum ada konfirmasi penyebab perbedaan data pada tanggal ini.
+> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Terdapat perbedaan hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berebda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
 
 ### TREND PERPROVINSI
 
@@ -165,6 +163,7 @@ library(RcppRoll)
 case_by_prov <- ina_province %>%
   select(Provinsi, Tanggal, Penambahan_Harian_Kasus_Terkonf) %>%
   filter(Provinsi != "Indonesia") %>%
+  filter(as.Date(Tanggal) != "2020-08-03") %>%
   arrange(Tanggal) %>% 
   group_by(Provinsi) %>%
     mutate(casesroll_avg=round(roll_mean(Penambahan_Harian_Kasus_Terkonf, 7, align="right", fill=0),0)) %>%

@@ -151,7 +151,6 @@ dygraph_plot_new_case
 <!-- Row {data-height=600} -->
 <!-- ----------------------------------------------------------------------- -->
 
-> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Terdapat perbedaan hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berebda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
 
 ### TREND PERPROVINSI
 
@@ -220,6 +219,8 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
 
 case_prov_daily_plot
 ```
+
+> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Terdapat perbedaan hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berebda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
 
 
 ### PROVINSI STATUS

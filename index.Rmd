@@ -34,8 +34,8 @@ update_date <- UPDATE_DATE
 
 ### TOTAL TERKONFIRMASI
 
-```{r}
-confirmed <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_positif) %>%
+```{r confirmed valuebox}
+confirmed <- ina_daily %>% subset(Tanggal == update_date, select = total.jumlah_positif) %>%
     format(round(0), big.mark = ",")
 
 confirmed_new <- ina_daily %>% subset(Tanggal==update_date, select = penambahan.jumlah_positif) %>%
@@ -46,7 +46,7 @@ valueBox(confirmed, caption = sprintf("TERKONFIRMASI  (%s)", if(confirmed_new>0)
 
 ### TOTAL DIRAWAT
 
-```{r}
+```{r hospitilized valuebox}
 hospitilized <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_dirawat) %>%
     format(round(0), big.mark = ",")
 
@@ -59,7 +59,7 @@ valueBox(hospitilized, caption = sprintf("DALAM PERAWATAN  (%s)", if(hospitilize
 
 ### TOTAL SEMBUH
 
-```{r}
+```{r recover valuebox}
 recovered <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_sembuh) %>%
     format(round(0), big.mark = ",")
 
@@ -71,7 +71,7 @@ valueBox(recovered, caption = sprintf("SEMBUH  (%s)", if(recovered_new>0) paste0
 
 ### TOTAL MENINGGAL
 
-```{r}
+```{r death valuebox}
 death <- ina_daily %>% subset(Tanggal==update_date, select = total.jumlah_meninggal) %>%
     format(round(0), big.mark = ",")
 
@@ -88,7 +88,7 @@ valueBox(death, caption = sprintf("MENINGGAL  (%s)", if(death_new>0) paste0("+",
 
 ### TREND KASUS KUMULATIF {data-padding=10}
 
-```{r}
+```{r cummulative trend}
 library(dplyr)
 library(dygraphs)
 library(xts)
@@ -116,7 +116,7 @@ dygraph_plot_cum
 
 ### TREND KASUS BARU PERHARI
 
-```{r}
+```{r daily trend}
 library(dplyr)
 library(dygraphs)
 library(xts)
@@ -154,7 +154,7 @@ dygraph_plot_new_case
 
 ### TREND PERPROVINSI
 
-```{r}
+```{r daily trend by province}
 library(RcppRoll)
 
 # code refference https://github.com/dioariadi/covid-19/blob/master/covid-19-tracker-indonesia.Rmd
@@ -187,7 +187,7 @@ case_by_prov_daily <- case_by_prov %>% ungroup() %>%
 ```
 
 
-```{r}
+```{r daily trend by province plot}
 library(highcharter)
 
 case_prov_daily_plot <- hchart(case_by_prov_daily, "line", 
@@ -214,29 +214,29 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
     text = "Rolling Average 7 hari Penambahan Kasus Terkonfirmasi Perhari"
     ) %>%
   hc_caption(
-    text = sprintf("Last Update : %s", max(ina_province$Tanggal))
+    text = sprintf("Data as of : %s", max(ina_province$Tanggal))
     )
 
 case_prov_daily_plot
 ```
 
-> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Terdapat perbedaan hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berebda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
+> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Perbedaan data yang ada hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berbeda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
 
 
 ### PROVINSI STATUS
 
-```{r}
+```{r province status}
 prov_status <- ina_province %>% 
   select(Provinsi, Tanggal, Kasus_Terkonfirmasi_Akumulatif, Kasus_Sembuh_Akumulatif, Kasus_Meninggal_Akumulatif, Kasus_Aktif_Akumulatif)  %>% 
     filter(Provinsi != "Indonesia") %>%
-    filter(as.Date(Tanggal) == update_date) %>%
+    filter(as.Date(Tanggal) == max(as.Date(Tanggal))) %>%
     mutate(death_rate = round(Kasus_Meninggal_Akumulatif / Kasus_Terkonfirmasi_Akumulatif, 4) * 100) %>%
     mutate(recovery_rate = round(Kasus_Sembuh_Akumulatif / Kasus_Terkonfirmasi_Akumulatif, 4) * 100)
 
 ```
 
 
-```{r}
+```{r province status plot}
 library(highcharter)
 
 #colorised status based on death_rate dan recovery_rate
@@ -326,7 +326,7 @@ hchart(
     text = "Berdasarkan Fatality Rate"
     ) %>% 
   hc_caption(
-    text = sprintf("Last Update : %s", max(ina_province$Tanggal))
+    text = sprintf("Data as of : %s", max(ina_province$Tanggal))
     ) %>%
   #
   # hc_plotOptions(

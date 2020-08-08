@@ -238,31 +238,13 @@ prov_status <- ina_province %>%
 
 ```{r province status plot}
 library(highcharter)
-
 #colorised status based on death_rate dan recovery_rate
 prov_status$Status <- with(prov_status, ifelse(
-  death_rate < mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'LowDeathHighRecover', ifelse(
-  death_rate > mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'HighDeathLowRecover', ifelse(
- death_rate > mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'HighDeathHighRecover', ifelse(
-  death_rate < mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'LowDeathHighRevover', 
-  'Others')))))
-
-colors <- c('#FFD300', '#C53E13', '#FFC800', '#5EFF00', '#FFC100')
-
-x <- c("Provinsi", "Recovery Rate", "Death Rate", "Kasus Aktif")
-#y <- sprintf("{point.%s:.2f}", c("Provinsi", "recovery_rate", "death_rate", "Kasus_Aktif_Akumulatif"))
-y <- c("{point.Provinsi}", "{point.recovery_rate}%", "{point.death_rate}%", "{point.Kasus_Aktif_Akumulatif}")
-
-tooltip_tb <- tooltip_table(x, y)
-
-library(highcharter)
-#colorised status based on death_rate dan recovery_rate
-prov_status$Status <- with(prov_status, ifelse(
-  death_rate < mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'LowDeathHighRecover', ifelse(
+  death_rate < mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'LowDeathLowRecover', ifelse(
   death_rate > mean(prov_status$death_rate) & recovery_rate < mean(prov_status$recovery_rate), 'HighDeathLowRecover', ifelse(
  death_rate > mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'HighDeathHighRecover', ifelse(
   death_rate < mean(prov_status$death_rate) & recovery_rate > mean(prov_status$recovery_rate), 'LowDeathHighRevover', 'Others')))))
-colors <- c('#FFD300', '#C53E13', '#FFC800', '#5EFF00', '#FFC100')
+colors <- c('#FFA500', '#FF4500', '#7FFF00', '#FFD700', '#FFC100')
 x <- c("Provinsi", "Recovery Rate", "Death Rate", "Kasus Aktif")
 #y <- sprintf("{point.%s:.2f}", c("Provinsi", "recovery_rate", "death_rate", "Kasus_Aktif_Akumulatif"))
 y <- c("{point.Provinsi}", "{point.recovery_rate}%", "{point.death_rate}%", "{point.Kasus_Aktif_Akumulatif}")

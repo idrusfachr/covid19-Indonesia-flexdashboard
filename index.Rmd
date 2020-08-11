@@ -162,7 +162,8 @@ library(RcppRoll)
 case_by_prov <- ina_province %>%
   select(Provinsi, Tanggal, Penambahan_Harian_Kasus_Terkonf) %>%
   filter(Provinsi != "Indonesia") %>%
-  filter(as.Date(Tanggal) != "2020-08-03") %>%
+  mutate(Tanggal = as.Date(Tanggal)) %>%
+  filter(Tanggal != "2020-08-03" & Tanggal != "2020-08-10" & Tanggal != "2020-08-11") %>%
   arrange(Tanggal) %>% 
   group_by(Provinsi) %>%
     mutate(casesroll_avg=round(roll_mean(Penambahan_Harian_Kasus_Terkonf, 7, align="right", fill=0),0)) %>%
@@ -173,12 +174,11 @@ filter_daily <- case_by_prov %>%
   filter(casesroll_avg >= 5) %>%
   slice(min(which(casesroll_avg >= 5))) %>% 
   ungroup() %>% 
-  mutate(Tanggal = as.Date(Tanggal)) %>%
+  #mutate(Tanggal = as.Date(Tanggal)) %>%
   rename(filter_week = Tanggal)
 
 case_by_prov_daily <- case_by_prov %>% ungroup() %>% 
    left_join(filter_daily[,c(1,2)], by = c("Provinsi")) %>% 
-   mutate(Tanggal = as.Date(Tanggal)) %>%
    filter(Tanggal >= filter_week) %>% 
    arrange(Tanggal) %>% 
    group_by(Provinsi) %>% 
@@ -220,7 +220,7 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
 case_prov_daily_plot
 ```
 
-> NOTE : Terdapat anomali di tanggal 3 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Perbedaan data yang ada hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berbeda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
+> NOTE : Terdapat anomali di tanggal 3. 9 dan 11 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Perbedaan data yang ada hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berbeda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
 
 
 ### PROVINSI STATUS

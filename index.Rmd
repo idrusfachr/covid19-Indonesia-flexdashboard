@@ -163,7 +163,7 @@ case_by_prov <- ina_province %>%
   select(Provinsi, Tanggal, Penambahan_Harian_Kasus_Terkonf) %>%
   filter(Provinsi != "Indonesia") %>%
   mutate(Tanggal = as.Date(Tanggal)) %>%
-  filter(Tanggal != "2020-08-03" & Tanggal != "2020-08-10" & Tanggal != "2020-08-11" & Tanggal != "2020-08-12") %>%
+  filter(Tanggal != "2020-08-03" & Tanggal != "2020-08-10" & Tanggal != "2020-08-11" & Tanggal != "2020-08-12" & Tanggal != "2020-08-13" & Tanggal != "2020-08-14") %>%
   arrange(Tanggal) %>% 
   group_by(Provinsi) %>%
     mutate(casesroll_avg=round(roll_mean(Penambahan_Harian_Kasus_Terkonf, 7, align="right", fill=0),0)) %>%

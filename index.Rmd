@@ -337,8 +337,6 @@ hchart(
   )
 
 ```
+
 > NOTE : Sejak tanggal 10 Agustus data dari BNPB tidak sesuai dengan data resmi gugus tugas sehingga kurvanya menjadi anomali dan tidak valid.
-
-
-
 

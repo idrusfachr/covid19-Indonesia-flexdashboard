@@ -163,7 +163,7 @@ case_by_prov <- ina_province %>%
   select(Provinsi, Tanggal, Penambahan_Harian_Kasus_Terkonf) %>%
   filter(Provinsi != "Indonesia") %>%
   mutate(Tanggal = as.Date(Tanggal)) %>%
-  filter(Tanggal != "2020-08-03" & Tanggal != "2020-08-10" & Tanggal != "2020-08-11" & Tanggal != "2020-08-12" & Tanggal != "2020-08-13" & Tanggal != "2020-08-14") %>%
+  filter(Tanggal != "2020-08-03" & Tanggal < "2020-08-10") %>%
   arrange(Tanggal) %>% 
   group_by(Provinsi) %>%
     mutate(casesroll_avg=round(roll_mean(Penambahan_Harian_Kasus_Terkonf, 7, align="right", fill=0),0)) %>%
@@ -214,13 +214,13 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
     text = "Rolling Average 7 hari Penambahan Kasus Terkonfirmasi Perhari"
     ) %>%
   hc_caption(
-    text = sprintf("Data as of : %s", max(ina_province$Tanggal))
+    text = sprintf("Data as of : %s", max(case_by_prov$Tanggal))
     )
 
 case_prov_daily_plot
 ```
 
-> NOTE : Sejak tanggal 11 Agustus data dari BNPB tidak sesuai dengan data resmi gugus tugas sehingga kurvanya menjadi anomali.
+> NOTE : Sejak tanggal 10 Agustus data dari BNPB tidak sesuai dengan data resmi gugus tugas sehingga kurvanya menjadi anomali dan tidak valid.
 
 
 ### PROVINSI STATUS
@@ -308,7 +308,7 @@ hchart(
     text = "Berdasarkan Fatality Rate"
     ) %>% 
   hc_caption(
-    text = sprintf("Data as of : %s", max(ina_province$Tanggal))
+    text = sprintf("Data as of : %s", max(case_by_prov$Tanggal))
     ) %>%
   #
   # hc_plotOptions(
@@ -337,6 +337,7 @@ hchart(
   )
 
 ```
+> NOTE : Sejak tanggal 10 Agustus data dari BNPB tidak sesuai dengan data resmi gugus tugas sehingga kurvanya menjadi anomali dan tidak valid.
 
 
 

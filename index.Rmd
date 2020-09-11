@@ -220,7 +220,7 @@ case_prov_daily_plot <- hchart(case_by_prov_daily, "line",
 case_prov_daily_plot
 ```
 
-> NOTE : Terdapat anomali di tanggal 3. 9 dan 11 Agustus pada data penambahan kasus perprovinsi yang bersumber dari BNPB. Perbedaan data yang ada hingga ratusan kali lipat dengan data penambahan secara nasional di tanggal yang sama, juga berbeda dengan data penambahan harian resmi di tiap provinsi. Karena average sensitif terhadap outlier, maka data tanggal di-exclude dari perhitungan rolling average.
+> NOTE : Sejak tanggal 11 Agustus data dari BNPB tidak sesuai dengan data resmi gugus tugas sehingga kurvanya menjadi anomali.
 
 
 ### PROVINSI STATUS
